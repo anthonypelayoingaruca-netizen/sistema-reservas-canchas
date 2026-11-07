@@ -1,0 +1,238 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Crear Usuarios - Admin</title>
+<style>
+*{box-sizing:border-box} body{font-family:Arial, sans-serif;margin:0;background:#f8fafc;color:#111}
+.topbar{background:#111;color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.topbar a{color:white;text-decoration:none}
+.container{max-width:1000px;margin:auto;padding:16px}
+.card{background:white;border-radius:16px;box-shadow:0 8px 24px #0001;padding:24px;margin-bottom:16px}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin:6px 0;box-sizing:border-box}
+button{width:100%;padding:12px;border-radius:10px;border:none;background:#2e7d32;color:white;font-weight:bold;cursor:pointer;margin-top:10px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th{background:#111;color:white;padding:8px;font-size:11px} td{padding:8px;border-bottom:1px solid #eee;text-align:center;font-size:12px}
+.btn-del{background:#c62828;color:white;padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-size:11px;width:auto;margin:2px}
+.btn-reset{background:#d97706;color:white;padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-size:11px;width:auto;margin:2px}
+.live{background:#2e7d32;color:white;padding:3px 8px;border-radius:20px;font-size:10px}
+.menu-btn-small{background:white;border:1px solid #ddd;color:#111;padding:6px 12px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px #0002;width:auto;font-size:18px;margin-right:10px}
+#sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#0f172a;color:white;z-index:200;transition:0.3s;padding:20px;box-shadow:4px 0 20px #0005;display:flex;flex-direction:column}
+#sidebar.open{left:0}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;display:none;z-index:199}
+#overlay.show{display:block}
+.side-header{font-size:20px;font-weight:bold;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.side-link{display:flex;align-items:center;gap:14px;padding:16px 14px;border-radius:12px;color:white;text-decoration:none;font-size:16px;margin:6px 0}
+.side-link:hover{background:#1e293b}
+.side-link.active{background:#2e7d32}
+.side-icon{font-size:20px;width:28px;text-align:center}
+.side-footer{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22}
+.badge-role{background:#334155;padding:4px 10px;border-radius:20px;font-size:11px}
+.badge-comas{background:#2563eb;padding:3px 8px;border-radius:20px;font-size:10px;color:white;font-weight:bold}
+.badge-jica{background:#d97706;padding:3px 8px;border-radius:20px;font-size:10px;color:white;font-weight:bold}
+.badge-todas{background:#111;padding:3px 8px;border-radius:20px;font-size:10px;color:white;font-weight:bold}
+.badge-pendiente{background:#f59e0b;color:white;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:bold}
+.badge-ok{background:#10b981;color:white;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:bold}
+.filtro-box{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#f1f5f9;border:2px solid #e2e8f0;padding:10px 14px;border-radius:12px;margin-bottom:12px}
+.filtro-box input{flex:1;min-width:200px;border:2px solid #2563eb;font-weight:bold;margin:4px}
+.filtro-box select{margin:4px;min-width:130px}
+.badge-count{background:#111;color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold}
+</style></head><body data-mid="{{session.user_id}}">
+
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sidebar">
+  <div class="side-header">
+    <span>⚽ Canchas App</span>
+    <button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:22px;width:auto;padding:0;cursor:pointer">✕</button>
+  </div>
+  <div style="margin-bottom:12px"><span class="badge-role">👤 {{session.username}} - {{session.rol}} - {{session.sede}}</span></div>
+  <a class="side-link" href="/reservas"><span class="side-icon">📅</span> Panel Reservas</a>
+  <a class="side-link" href="/comas"><span class="side-icon">📍</span> Comas</a>
+  <a class="side-link" href="/jicamarca"><span class="side-icon">📍</span> Jicamarca</a>
+  <a class="side-link" href="/horarios"><span class="side-icon">🕐</span> Horarios</a>
+  {% if session.rol == 'DUENO' %}
+  <a class="side-link" href="/resumen"><span class="side-icon">📊</span> Resumen</a>
+  <a class="side-link" href="/admin-dueno"><span class="side-icon">🔑</span> Admin Dueño</a>
+  <a class="side-link active" href="/register"><span class="side-icon">👥</span> Crear Usuarios</a>
+  {% endif %}
+  <div class="side-footer">
+    <a class="side-link" href="/logout" style="background:#c6282888"><span class="side-icon">🚪</span> Cerrar Sesión</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <button class="menu-btn-small" onclick="toggleMenu()">☰</button>
+    <span>👤 {{session.username}} - {{session.rol}} - {{session.sede}} <span class="live">● AUTO 3s</span> <b id="ultima">--:--</b></span>
+  </div>
+  <div>
+    <a href="/logout" style="background:#c62828;padding:6px 12px;border-radius:8px;font-weight:bold">Salir</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h3>➕ Nuevo usuario con sede</h3>
+    <p style="font-size:11px;color:#666">El usuario creado deberá cambiar su contraseña al primer ingreso.</p>
+    <input id="user" placeholder="Usuario (ej: comas1)">
+    <input id="pass" type="password" placeholder="Contraseña temporal (ej: 123456)">
+    <select id="rol">
+      <option value="RECEPCIONISTA">RECEPCIONISTA - reservas y horarios</option>
+      <option value="CLIENTE">CLIENTE - solo ve horarios</option>
+      <option value="DUENO">DUEÑO - acceso total</option>
+    </select>
+    <select id="sede">
+      <option value="TODAS">🌍 TODAS</option>
+      <option value="COMAS">📍 COMAS</option>
+      <option value="JICAMARCA">📍 JICAMARCA</option>
+    </select>
+    <button onclick="reg()">Crear cuenta</button>
+    <p id="msg" style="font-size:12px;height:14px"></p>
+  </div>
+
+  <div class="card">
+    <h3>📋 Usuarios existentes</h3>
+    <div class="filtro-box">
+      <span style="font-weight:bold">🔍</span>
+      <input id="filtroBusqueda" placeholder="Buscar usuario, rol, sede..." oninput="aplicarFiltro()">
+      <select id="filtroRol" onchange="aplicarFiltro()">
+        <option value="">Todos roles</option>
+        <option value="DUENO">DUEÑO</option>
+        <option value="RECEPCIONISTA">RECEPCIONISTA</option>
+        <option value="CLIENTE">CLIENTE</option>
+      </select>
+      <select id="filtroSede" onchange="aplicarFiltro()">
+        <option value="">Todas sedes</option>
+        <option value="COMAS">COMAS</option>
+        <option value="JICAMARCA">JICAMARCA</option>
+        <option value="TODAS">TODAS</option>
+      </select>
+      <select id="filtroEstado" onchange="aplicarFiltro()">
+        <option value="">Todo estado</option>
+        <option value="pendiente">🔐 Pendiente</option>
+        <option value="ok">✅ OK</option>
+      </select>
+      <button onclick="limpiarFiltro()" style="width:auto;padding:8px 12px;background:#616161">✕ Limpiar</button>
+      <span class="badge-count" id="contador">0 usuarios</span>
+    </div>
+    <div id="lista">Cargando...</div>
+  </div>
+</div>
+
+<script>
+const MI_ID = parseInt(document.body.getAttribute('data-mid') || '0');
+let TODOS_USERS = [];
+
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function sedeBadge(sede){
+  if(sede=='COMAS') return '<span class="badge-comas">📍 COMAS</span>';
+  if(sede=='JICAMARCA') return '<span class="badge-jica">📍 JICAMARCA</span>';
+  return '<span class="badge-todas">🌍 TODAS</span>';
+}
+
+async function cargarUsers(){
+  let r = await fetch('/api/usuarios'); 
+  let data = await r.json();
+  document.getElementById('ultima').innerText = new Date().toLocaleTimeString();
+  TODOS_USERS = data;
+  aplicarFiltro();
+}
+
+function aplicarFiltro(){
+  let texto = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
+  let rol = document.getElementById('filtroRol').value;
+  let sede = document.getElementById('filtroSede').value;
+  let estado = document.getElementById('filtroEstado').value;
+
+  let filtrados = TODOS_USERS.filter(u=>{
+    let blob = `${u.username} ${u.rol} ${u.sede} ${u.creado||''}`.toLowerCase();
+    if(texto && !blob.includes(texto)) return false;
+    if(rol && u.rol !== rol) return false;
+    if(sede && (u.sede||'TODAS') !== sede) return false;
+    if(estado){
+      let pendiente = parseInt(u.debe_cambiar_password)===1 && u.rol!=='DUENO';
+      if(estado==='pendiente' && !pendiente) return false;
+      if(estado==='ok' && pendiente) return false;
+    }
+    return true;
+  });
+  renderTabla(filtrados);
+}
+
+function limpiarFiltro(){
+  document.getElementById('filtroBusqueda').value='';
+  document.getElementById('filtroRol').value='';
+  document.getElementById('filtroSede').value='';
+  document.getElementById('filtroEstado').value='';
+  aplicarFiltro();
+}
+
+function renderTabla(data){
+  document.getElementById('contador').innerText = `${data.length} / ${TODOS_USERS.length} usuarios`;
+  let html = '<table><tr><th>Usuario</th><th>Rol</th><th>Sede</th><th>Estado Clave</th><th>Creado</th><th>Acción</th></tr>';
+  if(!data.length){
+    html += '<tr><td colspan="6" style="padding:20px;color:#999">🔍 No se encontró ningún usuario</td></tr>';
+  }
+  data.forEach(function(u){
+    let btn = '';
+    if(u.id != MI_ID){
+      btn += '<button class="btn-reset" onclick="resetPass(' + u.id + ',\'' + u.username + '\')">🔑 Reset</button>';
+      btn += '<button class="btn-del" onclick="borrarUser(' + u.id + ',\'' + u.username + '\')">🗑</button>';
+    } else {
+      btn = '<small style="color:#888">Tú</small>';
+    }
+    let fecha = (u.creado || '').split('T')[0];
+    let sede = u.sede || 'TODAS';
+    let estadoClave = '';
+    if(u.rol==='DUENO'){
+      estadoClave = '<span class="badge-ok">DUEÑO</span>';
+    } else {
+      if(parseInt(u.debe_cambiar_password)===1){
+        estadoClave = '<span class="badge-pendiente">🔐 Pendiente cambio</span>';
+      } else {
+        estadoClave = '<span class="badge-ok">✅ OK</span>';
+      }
+    }
+    html += '<tr><td><b>' + u.username + '</b></td><td>' + u.rol + '</td><td>' + sedeBadge(sede) + '</td><td>' + estadoClave + '</td><td><small>' + fecha + '</small></td><td>' + btn + '</td></tr>';
+  });
+  html += '</table>'; 
+  document.getElementById('lista').innerHTML = html;
+}
+
+async function reg(){
+  let username = document.getElementById('user').value.trim();
+  let password = document.getElementById('pass').value.trim();
+  let rol = document.getElementById('rol').value;
+  let sede = document.getElementById('sede').value;
+  if(!username || !password){
+    document.getElementById('msg').innerText = '❌ Completa usuario y contraseña';
+    document.getElementById('msg').style.color = 'red';
+    return;
+  }
+  let r = await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username,password:password,rol:rol,sede:sede})});
+  let j = await r.json();
+  document.getElementById('msg').innerText = j.ok ? '✅ Usuario ' + username + ' creado! Debe cambiar clave al entrar. Sede: ' + sede : '❌ ' + (j.error || 'Error');
+  document.getElementById('msg').style.color = j.ok ? 'green' : 'red';
+  if(j.ok){
+    document.getElementById('user').value = '';
+    document.getElementById('pass').value = '';
+    cargarUsers();
+  }
+}
+async function borrarUser(id, username){
+  if(!confirm('¿Borrar a ' + username + '?')) return;
+  let r = await fetch('/api/usuarios/' + id,{method:'DELETE'});
+  let j = await r.json();
+  if(j.ok){cargarUsers();} else {alert('❌ ' + j.error);}
+}
+async function resetPass(id, username){
+  let nueva = prompt('Nueva contraseña temporal para ' + username + ' (deberá cambiarla al entrar):','123456');
+  if(!nueva) return;
+  if(nueva.length<4){ alert('Mínimo 4'); return; }
+  let r = await fetch('/api/reset-password/' + id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nueva:nueva})});
+  let j = await r.json();
+  if(j.ok){ alert('✅ ' + username + ' reseteado a ' + nueva + ' y deberá cambiar al entrar'); cargarUsers(); }
+  else { alert('❌ ' + (j.error||'Error')); }
+}
+cargarUsers();
+setInterval(cargarUsers,3000);
+</script></body></html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Resumen - Dueño</title>
+<style>
+body{font-family:Arial;padding:0;margin:0;background:#f1f5f9;max-width:1300px;margin:auto}
+.topbar{background:#111;color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.topbar a{color:white;text-decoration:none}
+.card{background:white;padding:20px;border-radius:12px;box-shadow:0 4px 12px #0001;margin:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{padding:18px;border-radius:12px;color:white;text-align:center}
+.kpi h2{margin:5px 0;font-size:32px}
+.kpi.verde{background:#2e7d32}.kpi.rojo{background:#c62828}.kpi.azul{background:#1565c0}.kpi.naranja{background:#ef6c00}.kpi.gris{background:#616161}
+input,select,button{padding:10px;border-radius:8px;border:1px solid #ccc;margin:4px}
+button{cursor:pointer;font-weight:bold;border:none;color:white}
+.btn-hoy{background:#111}.btn-mes{background:#2e7d32}.btn-rango{background:#1565c0}.btn-todo{background:#78909c}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}
+th{background:#111;color:white;padding:10px;font-size:12px} td{padding:9px;border-bottom:1px solid #eee;text-align:center;font-size:13px}
+.adeuda{background:#ffebee;color:#c62828;font-weight:bold;padding:4px 8px;border-radius:8px}
+.pagado{background:#e8f5e9;color:#2e7d32;font-weight:bold;padding:4px 8px;border-radius:8px}
+.no-vino{background:#eeeeee;color:#616161;font-weight:bold;padding:4px 8px;border-radius:8px}
+.live{animation: pulse 2s infinite; background:#2e7d32; color:white; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold}
+@keyframes pulse { 0%{opacity:1} 50%{opacity:0.6} 100%{opacity:1} }
+/* MENU */
+.menu-btn-small{background:white;border:1px solid #ddd;color:#111;padding:6px 12px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px #0002;width:auto;font-size:18px;margin-right:10px}
+#sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#0f172a;color:white;z-index:200;transition:0.3s;padding:20px;box-shadow:4px 0 20px #0005;display:flex;flex-direction:column}
+#sidebar.open{left:0}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;display:none;z-index:199}
+#overlay.show{display:block}
+.side-header{font-size:20px;font-weight:bold;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.side-link{display:flex;align-items:center;gap:14px;padding:16px 14px;border-radius:12px;color:white;text-decoration:none;font-size:16px;margin:6px 0}
+.side-link:hover{background:#1e293b}
+.side-link.active{background:#2e7d32}
+.side-icon{font-size:20px;width:28px;text-align:center}
+.side-footer{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22}
+.badge-role{background:#334155;padding:4px 10px;border-radius:20px;font-size:11px}
+.badge-sede{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:bold;color:white}
+.badge-COMAS{background:#2563eb}.badge-JICAMARCA{background:#d97706}.badge-TODAS{background:#111}
+/* BOTONES SEDE - MISMOS COLORES SOLIDOS */
+.sede-switch{background:#cbd5e1;padding:5px;border-radius:14px;display:flex;gap:6px;box-shadow:inset 0 1px 3px #0002}
+.sede-btn{padding:8px 16px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:12px;transition:0.2s;border:1px solid transparent}
+.btn-comas-active{background:#2563eb;color:white;box-shadow:0 4px 10px #2563eb88;border-color:#1d4ed8}
+.btn-jica-active{background:#d97706;color:white;box-shadow:0 4px 10px #d9770688;border-color:#b45309}
+.btn-todas-active{background:#111;color:white;box-shadow:0 4px 10px #0008}
+.btn-inactive{background:white;color:#475569;border-color:#e2e8f0}
+</style></head><body data-sede="{{sede}}">
+
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sidebar">
+  <div class="side-header">
+    <span>⚽ Canchas App</span>
+    <button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:22px;width:auto;padding:0;cursor:pointer">✕</button>
+  </div>
+  <div style="margin-bottom:12px"><span class="badge-role">👤 {{session.username}} - {{session.rol}}</span> <span class="badge-sede badge-TODAS">DUEÑO</span></div>
+  <a class="side-link" href="/comas"><span class="side-icon">📅</span> Reservas Comas</a>
+  <a class="side-link" href="/jicamarca"><span class="side-icon">📅</span> Reservas Jicamarca</a>
+  <a class="side-link" href="/horarios?sede=COMAS"><span class="side-icon">🕐</span> Horarios</a>
+  <a class="side-link active" href="/resumen"><span class="side-icon">📊</span> Resumen</a>
+  <a class="side-link" href="/admin-dueno"><span class="side-icon">🔑</span> Admin Dueño</a>
+  <a class="side-link" href="/register"><span class="side-icon">👥</span> Crear Usuarios</a>
+  <div class="side-footer">
+    <a class="side-link" href="/logout" style="background:#c6282888"><span class="side-icon">🚪</span> Cerrar Sesión</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <button class="menu-btn-small" onclick="toggleMenu()">☰</button>
+    <span>👤 {{session.username}} - {{session.rol}} <span class="live">● AUTO 3s</span> <b id="horaTop">--:--</b></span>
+  </div>
+  <div>
+    <a href="/logout" style="background:#c62828;padding:6px 12px;border-radius:8px;font-weight:bold">Salir</a>
+  </div>
+</div>
+
+<!-- TITULO CON BOTONES EN CUADRO ROJO -->
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 12px 0 12px">
+  <h1 style="margin:0;font-size:22px">📊 Resumen de Ingresos - Dueño <span class="live" id="liveDot">● EN VIVO - Auto</span></h1>
+  <div class="sede-switch">
+    <button id="btn-todas" onclick="setSedeFiltro('TODAS')" class="sede-btn btn-todas-active">🌐 TODAS</button>
+    <button id="btn-comas" onclick="setSedeFiltro('COMAS')" class="sede-btn btn-inactive">📍 COMAS</button>
+    <button id="btn-jica" onclick="setSedeFiltro('JICAMARCA')" class="sede-btn btn-inactive">📍 JICAMARCA</button>
+  </div>
+  <span id="contadorSede" style="font-size:12px;font-weight:bold;background:white;padding:6px 12px;border-radius:20px;box-shadow:0 2px 6px #0001"></span>
+</div>
+
+<div class="card">
+<h3>🔍 Filtros Rápidos</h3>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+<button class="btn-hoy" onclick="filtroHoy()">HOY</button>
+<button class="btn-hoy" onclick="filtroAyer()">AYER</button>
+<button class="btn-mes" onclick="filtroEsteMes()">ESTE MES</button>
+<button class="btn-mes" onclick="filtroMesAnterior()">MES ANTERIOR</button>
+<button class="btn-todo" onclick="filtroTodo()">TODO</button>
+<span style="margin-left:auto;font-size:12px;color:#666">Última actualización: <b id="ultimaHora">--:--</b></span>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:10px">
+<b>Rango por Mes:</b>
+<input id="fDesdeMes" type="month"><span>hasta</span><input id="fHastaMes" type="month">
+<button class="btn-rango" onclick="filtrarRangoMeses()">🔍 VER RANGO</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px">
+<b>Filtros finos:</b>
+<input id="fFecha" type="date" onchange="filtrar()"><input id="fMes" type="month" onchange="filtrarMes()">
+<input id="fNombre" placeholder="Buscar cliente..." oninput="filtrar()" style="flex:1">
+</div>
+<p id="infoRango" style="font-weight:bold;color:#1565c0;margin-top:8px"></p>
+</div>
+
+<div class="kpis">
+<div class="kpi verde"><small>INGRESO REAL (Caja)</small><h2 id="kIngreso">S/0</h2><small>Adelantos + Pagados</small></div>
+<div class="kpi azul"><small>TOTAL VENDIDO</small><h2 id="kVendido">S/0</h2></div>
+<div class="kpi rojo"><small>POR COBRAR</small><h2 id="kDeuda">S/0</h2></div>
+<div class="kpi naranja"><small>RESERVAS</small><h2 id="kCount">0</h2><small id="kDetalle"></small></div>
+<div class="kpi gris"><small>NO VINIERON</small><h2 id="kNoVino">0</h2></div>
+</div>
+
+<div class="card">
+<h3>🚨 Clientes que deben o NO VINIERON - <span id="labelSede">TODAS</span></h3>
+<table><thead><tr><th>Sede</th><th>Cliente</th><th>Fecha / Hora</th><th>Cancha</th><th>Estado</th><th>Debe / Pagó</th><th>Boleta Adel / Final</th><th>Tel</th></tr></thead><tbody id="tablaDeudores"></tbody></table>
+</div>
+
+<div class="card" style="padding:0">
+<h3 style="padding:15px 20px 0">📋 Registros del rango (sincronizado con reservas) - <span id="labelSede2">TODAS</span></h3>
+<table><thead><tr><th>Sede</th><th>Cliente</th><th>Fecha / Horario</th><th>Horas</th><th>Total</th><th>Pagó</th><th>Estado</th><th>Boletas</th></tr></thead><tbody id="tablaTodos"></tbody></table>
+</div>
+
+<script>
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+let todas=[];
+let filtroActual = {tipo:'mesActual', valor:null};
+let sedeFiltro = 'TODAS';
+
+function setSedeFiltro(sede){
+  sedeFiltro = sede;
+  document.getElementById('btn-todas').className = sede=='TODAS' ? 'sede-btn btn-todas-active' : 'sede-btn btn-inactive';
+  document.getElementById('btn-comas').className = sede=='COMAS' ? 'sede-btn btn-comas-active' : 'sede-btn btn-inactive';
+  document.getElementById('btn-jica').className = sede=='JICAMARCA' ? 'sede-btn btn-jica-active' : 'sede-btn btn-inactive';
+  document.getElementById('labelSede').innerText = sede;
+  document.getElementById('labelSede2').innerText = sede;
+  cargarSilencioso();
+}
+
+async function fetchSede(sede){
+  let r = await fetch('/api/reservas?sede='+sede);
+  let datos = await r.json();
+  if(!Array.isArray(datos)) return [];
+  return datos.map(x=>({...x, _sede: x.sede || sede}));
+}
+
+async function cargarSilencioso(){
+  let datos = [];
+  if(sedeFiltro=='TODAS'){
+    let [c,j] = await Promise.all([fetchSede('COMAS'), fetchSede('JICAMARCA')]);
+    datos = [...c,...j];
+  }else{
+    datos = await fetchSede(sedeFiltro);
+  }
+  todas = datos;
+  document.getElementById('ultimaHora').innerText = new Date().toLocaleTimeString();
+  document.getElementById('horaTop').innerText = new Date().toLocaleTimeString();
+  document.getElementById('contadorSede').innerText = `${todas.length} reservas en ${sedeFiltro}`;
+  aplicarFiltroActual();
+}
+function aplicarFiltroActual(){
+  if(filtroActual.tipo==='hoy') filtroHoy(false);
+  else if(filtroActual.tipo==='ayer') filtroAyer(false);
+  else if(filtroActual.tipo==='mes') filtrarMes(false);
+  else if(filtroActual.tipo==='rango') filtrarRangoMeses(false);
+  else if(filtroActual.tipo==='todo') filtroTodo(false);
+  else if(filtroActual.tipo==='mesActual') filtroEsteMes(false);
+  else filtrar();
+}
+function filtrar(){
+  let fFecha=document.getElementById('fFecha').value;
+  let fNombre=document.getElementById('fNombre').value.toLowerCase();
+  let lista=todas.filter(x=>{let ok=true;if(fFecha)ok=ok&&x.fecha==fFecha;if(fNombre)ok=ok&&x.nombre.toLowerCase().includes(fNombre);return ok;});
+  render(lista);
+}
+function filtrarMes(recargarFiltro=true){
+  let mes=document.getElementById('fMes').value;if(!mes){filtrar();return}
+  if(recargarFiltro) filtroActual={tipo:'mes', valor:mes};
+  let lista=todas.filter(x=>x.fecha.startsWith(mes));document.getElementById('infoRango').innerText=`Mes: ${mes} | Sede: ${sedeFiltro}`;render(lista);
+}
+function filtrarRangoMeses(recargarFiltro=true){
+  let desde=document.getElementById('fDesdeMes').value;let hasta=document.getElementById('fHastaMes').value;
+  if(!desde||!hasta){if(recargarFiltro) alert('Elige desde que mes hasta que mes');return}
+  if(recargarFiltro) filtroActual={tipo:'rango', valor:{desde,hasta}};
+  let lista=todas.filter(x=>{
+    let mes=x.fecha.slice(0,7);
+    return mes>=desde && mes<=hasta;
+  });
+  document.getElementById('infoRango').innerText=`Rango: ${desde} hasta ${hasta} (${lista.length} reservas) | Sede: ${sedeFiltro}`;
+  if(recargarFiltro){document.getElementById('fFecha').value='';document.getElementById('fMes').value='';}
+  render(lista);
+}
+function filtroHoy(recargarFiltro=true){let h=new Date().toISOString().split('T')[0];if(recargarFiltro){filtroActual={tipo:'hoy'};document.getElementById('fFecha').value=h;document.getElementById('fMes').value='';document.getElementById('fDesdeMes').value='';document.getElementById('fHastaMes').value='';} let lista=todas.filter(x=>x.fecha==h); document.getElementById('infoRango').innerText=`HOY: ${h} | Sede: ${sedeFiltro}`; render(lista);}
+function filtroAyer(recargarFiltro=true){let d=new Date();d.setDate(d.getDate()-1);let h=d.toISOString().split('T')[0];if(recargarFiltro){filtroActual={tipo:'ayer'};document.getElementById('fFecha').value=h;document.getElementById('fMes').value='';} let lista=todas.filter(x=>x.fecha==h); document.getElementById('infoRango').innerText=`AYER: ${h} | Sede: ${sedeFiltro}`; render(lista);}
+function filtroEsteMes(recargarFiltro=true){let m=new Date().toISOString().slice(0,7);if(recargarFiltro){filtroActual={tipo:'mesActual'};document.getElementById('fMes').value=m;} let lista=todas.filter(x=>x.fecha.startsWith(m));document.getElementById('infoRango').innerText=`Este mes: ${m} (Auto) | Sede: ${sedeFiltro}`;render(lista);}
+function filtroMesAnterior(recargarFiltro=true){let d=new Date();d.setMonth(d.getMonth()-1);let m=d.toISOString().slice(0,7);if(recargarFiltro){filtroActual={tipo:'mes', valor:m};document.getElementById('fMes').value=m;} let lista=todas.filter(x=>x.fecha.startsWith(m));document.getElementById('infoRango').innerText=`Mes anterior: ${m} | Sede: ${sedeFiltro}`;render(lista);}
+function filtroTodo(recargarFiltro=true){if(recargarFiltro){filtroActual={tipo:'todo'};document.getElementById('fFecha').value='';document.getElementById('fMes').value='';document.getElementById('fNombre').value='';document.getElementById('fDesdeMes').value='';document.getElementById('fHastaMes').value='';} document.getElementById('infoRango').innerText=`Todo el historial (Auto) | Sede: ${sedeFiltro}`;render(todas);}
+
+function badgeSede(sede){
+  if(sede=='COMAS') return '<span class="badge-sede badge-COMAS">COMAS</span>';
+  if(sede=='JICAMARCA') return '<span class="badge-sede badge-JICAMARCA">JICAMARCA</span>';
+  return '<span class="badge-sede badge-TODAS">'+sede+'</span>';
+}
+
+function render(lista){
+  let ingreso=0,vendido=0,deuda=0,cPag=0,cDebe=0,cNoVino=0;
+  lista.forEach(r=>{ingreso+=r.adelanto;vendido+=r.monto_total;if(r.estado=='NO_VINO'){cNoVino++;}else{deuda+=r.monto_total-r.adelanto;if(r.estado=='PAGADO')cPag++;else cDebe++;}});
+  document.getElementById('kIngreso').innerText='S/'+ingreso;document.getElementById('kVendido').innerText='S/'+vendido;document.getElementById('kDeuda').innerText='S/'+deuda;
+  document.getElementById('kCount').innerText=lista.length;document.getElementById('kDetalle').innerText=`${cPag} pagados / ${cDebe} deben`;document.getElementById('kNoVino').innerText=cNoVino;
+
+  let deudores=lista.filter(r=>r.monto_total-r.adelanto>0 || r.estado=='NO_VINO');
+  document.getElementById('tablaDeudores').innerHTML=deudores.length?deudores.map(r=>`<tr><td>${badgeSede(r._sede)}</td><td><b>${r.nombre}</b></td><td>${r.fecha} ${r.hora_inicio||r.hora} - ${r.hora_fin||''}</td><td>${r.cancha}</td><td>${r.estado=='PAGADO'?'CANCELADO':r.estado}</td><td>${r.estado=='NO_VINO'?'<span class="no-vino">NO VINO S/'+r.adelanto+'</span>':r.monto_total-r.adelanto>0?'<span class="adeuda">Debe S/'+(r.monto_total-r.adelanto)+'</span>':'<span class="pagado">S/0</span>'}</td><td><small>${r.boleta_adelanto||'-'} / ${r.boleta_final||'-'}</small></td><td>${r.telefono}</td></tr>`).join(''):'<tr><td colspan="8">✅ Sin deudas en '+sedeFiltro+'</td></tr>';
+
+  document.getElementById('tablaTodos').innerHTML=lista.length?lista.map(r=>`<tr><td>${badgeSede(r._sede)}</td><td>${r.nombre}</td><td>${r.fecha} ${r.hora_inicio||r.hora} - ${r.hora_fin||''}</td><td>${r.duracion||1}h</td><td>S/${r.monto_total}</td><td>S/${r.adelanto}</td><td>${r.estado=='PAGADO'?'<span class="pagado">CANCELADO</span>':r.estado=='NO_VINO'?'<span class="no-vino">NO VINO</span>':'<span class="adeuda">ADELANTO</span>'}</td><td><small>${r.boleta_adelanto||''} ${r.boleta_final?'/ '+r.boleta_final:''}</small></td></tr>`).join(''):'<tr><td colspan="8">Sin registros en '+sedeFiltro+'</td></tr>';
+}
+
+async function cargarInicial(){
+  let [c,j] = await Promise.all([fetchSede('COMAS'), fetchSede('JICAMARCA')]);
+  todas = [...c,...j];
+  filtroEsteMes();
+  document.getElementById('contadorSede').innerText = `${todas.length} reservas en TODAS`;
+}
+
+cargarInicial();
+setInterval(cargarSilencioso, 3000);
+</script></body></html>

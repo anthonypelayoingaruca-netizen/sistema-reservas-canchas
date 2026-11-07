@@ -1,0 +1,78 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Login - Sistema Reservas</title>
+<style>
+body{font-family:Arial;background:#111;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+.card{background:white;padding:32px;border-radius:16px;box-shadow:0 10px 30px #0005;width:100%;max-width:380px;text-align:center}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin:8px 0;box-sizing:border-box}
+button{width:100%;padding:12px;border-radius:10px;border:none;background:#111;color:white;font-weight:bold;cursor:pointer;margin-top:10px}
+button:disabled{opacity:0.6}
+.logo{font-size:36px;margin-bottom:10px}
+</style></head><body>
+<div class="card">
+<div class="logo">⚽🔐</div>
+<h2 style="margin:0">Ingresar al Sistema</h2>
+<p style="font-size:12px;color:#666;margin-top:8px">Solo personal autorizado. Contacta al dueño para crear tu cuenta.</p>
+<input id="user" placeholder="Usuario">
+<input id="pass" type="password" placeholder="Contraseña">
+<button id="btnLogin" onclick="login()">Entrar</button>
+<p id="msg" style="color:red;font-size:12px;min-height:14px"></p>
+<p style="font-size:11px;color:#999;margin-top:20px">Sistema protegido - Acceso solo con cuenta creada por el administrador</p>
+</div>
+<script>
+async function login(){
+  let btn=document.getElementById('btnLogin');
+  let msg=document.getElementById('msg');
+  let u=document.getElementById('user').value.trim();
+  let p=document.getElementById('pass').value.trim();
+  
+  if(!u || !p){ msg.innerText='Falta usuario o clave'; return; }
+
+  btn.innerText='Verificando...'; btn.disabled=true; msg.innerText='';
+  
+  try{
+    let r = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    let j = await r.json();
+    
+    if(!r.ok){ 
+      msg.innerText=j.error || 'Error'; 
+      btn.innerText='Entrar'; btn.disabled=false;
+      return; 
+    }
+
+    if(j.debe_cambiar){
+      // guardamos next para después de cambiar clave
+      let params = new URLSearchParams(window.location.search);
+      let nextUrl = params.get('next');
+      if(nextUrl){
+        window.location='/cambiar-password?next='+encodeURIComponent(nextUrl);
+      } else {
+        window.location='/cambiar-password';
+      }
+      return;
+    }
+
+    let params = new URLSearchParams(window.location.search);
+    let nextUrl = params.get('next');
+
+    if(nextUrl && nextUrl !== '/cambiar-password' && nextUrl !== '/api/cambiar-password'){
+      location = nextUrl;
+    } else {
+      // ✅ LÓGICA CORREGIDA POR SEDE
+      if(j.rol=='DUENO') location='/resumen';
+      else {
+        if(j.sede=='COMAS') location='/comas';
+        else if(j.sede=='JICAMARCA') location='/jicamarca';
+        else if(j.sede=='TODAS') location='/reservas';
+        else location='/comas';
+      }
+    }
+
+  }catch(e){
+    msg.innerText='Error de conexión';
+    btn.innerText='Entrar'; btn.disabled=false;
+    console.error(e);
+  }
+}
+document.getElementById('pass').addEventListener('keydown',e=>{if(e.key=='Enter')login()});
+document.getElementById('user').addEventListener('keydown',e=>{if(e.key=='Enter')login()});
+</script>
+</body></html>

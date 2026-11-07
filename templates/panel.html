@@ -1,0 +1,332 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Panel {{sede}}</title>
+<style>
+body{font-family:Arial;padding:0;margin:0;background:#f1f5f9;max-width:1600px;margin:auto}
+.topbar{background:#111;color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.topbar a{color:white;text-decoration:none}
+.card{background:white;padding:20px;border-radius:12px;box-shadow:0 4px 12px #0001;margin:15px}
+input,select,button{padding:10px;border-radius:8px;border:1px solid #ccc;margin:4px}
+button{cursor:pointer;font-weight:bold;border:none;color:white}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}
+th{background:#111;color:white;padding:8px;font-size:11px} td{padding:8px;border-bottom:1px solid #eee;text-align:center;font-size:12px}
+.PAGADO{background:#2e7d32;color:white;padding:4px 10px;border-radius:20px;font-weight:bold}
+.ADELANTO{background:#c62828;color:white;padding:4px 10px;border-radius:20px;font-weight:bold}
+.NO_VINO{background:#616161;color:white;padding:4px 10px;border-radius:20px;font-weight:bold}
+.fila-no-vino{background:#eeeeee;color:#777}
+.btn-verde{background:#2e7d32}.btn-gris{background:#616161}.btn-naranja{background:#ef6c00}.btn-azul{background:#1565c0}
+.boleta{font-family:monospace;background:#fff9c4;padding:2px 6px;border-radius:4px}
+.live{background:#2e7d32;color:white;padding:3px 8px;border-radius:20px;font-size:10px;animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
+.menu-btn-small{background:white;border:1px solid #ddd;color:#111;padding:6px 12px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px #0002;width:auto;font-size:18px;margin-right:10px}
+#sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#0f172a;color:white;z-index:200;transition:0.3s;padding:20px;box-shadow:4px 0 20px #0005;display:flex;flex-direction:column}
+#sidebar.open{left:0}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;display:none;z-index:199}
+#overlay.show{display:block}
+.side-header{font-size:20px;font-weight:bold;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.side-link{display:flex;align-items:center;gap:14px;padding:16px 14px;border-radius:12px;color:white;text-decoration:none;font-size:16px;margin:6px 0}
+.side-link:hover{background:#1e293b}
+.side-link.active{background:#2e7d32}
+.side-icon{font-size:20px;width:28px;text-align:center}
+.side-footer{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22}
+.badge-role{background:#334155;padding:4px 10px;border-radius:20px;font-size:11px}
+.badge-sede{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;color:white}
+.badge-COMAS{background:#2563eb}.badge-JICAMARCA{background:#d97706}.badge-TODAS{background:#111}
+.sede-switch{background:#cbd5e1;padding:5px;border-radius:14px;display:flex;gap:6px;box-shadow:inset 0 1px 3px #0002}
+.sede-btn{padding:10px 20px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px;transition:0.2s;border:1px solid transparent}
+.btn-comas-active{background:#2563eb;color:white;box-shadow:0 4px 10px #2563eb88;border-color:#1d4ed8}
+.btn-jica-active{background:#d97706;color:white;box-shadow:0 4px 10px #d9770688;border-color:#b45309}
+.btn-inactive{background:white;color:#475569;border-color:#e2e8f0}
+.btn-inactive:hover{background:#f1f5f9}
+/* FILTRO NUEVO */
+.filtro-box{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:2px solid #e2e8f0;padding:10px 14px;border-radius:12px;margin:0 15px;box-shadow:0 2px 8px #0001}
+.filtro-box input{flex:1;min-width:220px;border:2px solid #2563eb;font-weight:bold}
+.filtro-box select{border:2px solid #e2e8f0}
+.badge-count{background:#111;color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:bold}
+</style></head><body data-sede="{{sede}}">
+  
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sidebar">
+  <div class="side-header">
+    <span>⚽ Canchas App</span>
+    <button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:22px;width:auto;padding:0;cursor:pointer">✕</button>
+  </div>
+  <div style="margin-bottom:12px"><span class="badge-role">👤 {{session.username}} - {{session.rol}}</span> <span class="badge-sede badge-{{sede}}">{{sede}}</span></div>
+  <a class="side-link active" href="/reservas?sede={{sede}}"><span class="side-icon">📅</span> Panel Reservas</a>
+  <a class="side-link" href="/horarios?sede={{sede}}"><span class="side-icon">🕐</span> Horarios</a>
+  {% if session.rol == 'DUENO' %}
+  <a class="side-link" href="/resumen?sede={{sede}}"><span class="side-icon">📊</span> Resumen</a>
+  <a class="side-link" href="/admin-dueno"><span class="side-icon">🔑</span> Admin Dueño</a>
+  <a class="side-link" href="/register"><span class="side-icon">👥</span> Crear Usuarios</a>
+  {% endif %}
+  <div class="side-footer">
+    <a class="side-link" href="/logout" style="background:#c6282888"><span class="side-icon">🚪</span> Cerrar Sesión</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <button class="menu-btn-small" onclick="toggleMenu()">☰</button>
+    <span>👤 {{session.username}} - {{session.rol}} <span class="badge-sede badge-{{sede}}">{{sede}}</span> <span class="live">● AUTO 3s</span> <b id="ultHora">--:--</b></span>
+  </div>
+  <div>
+    <a href="/logout" style="background:#c62828;padding:6px 12px;border-radius:8px;font-weight:bold">Salir</a>
+  </div>
+</div>
+
+<div style="padding:12px 15px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:white;margin:10px 15px 0 15px;border-radius:12px;box-shadow:0 2px 8px #0001">
+  <h1 style="margin:0;font-size:20px">⚽ Panel de Reservas - <span class="badge-sede badge-{{sede}}">{{sede}}</span></h1>
+  {% if session.rol == 'DUENO' %}
+  <div class="sede-switch">
+    {% if sede == 'COMAS' %}
+      <button onclick="location.href='/comas'" class="sede-btn btn-comas-active">📍 COMAS</button>
+      <button onclick="location.href='/jicamarca'" class="sede-btn btn-inactive">📍 JICAMARCA</button>
+    {% else %}
+      <button onclick="location.href='/comas'" class="sede-btn btn-inactive">📍 COMAS</button>
+      <button onclick="location.href='/jicamarca'" class="sede-btn btn-jica-active">📍 JICAMARCA</button>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="card" style="border-left:6px solid #2e7d32">
+<h3>➕ Nueva Reserva - Rango con media hora - DB: {{sede}}</h3>
+<div style="display:flex;flex-wrap:wrap;align-items:center">
+<input id="nombre" placeholder="Nombre *"><input id="telefono" placeholder="Celular">
+<select id="cancha"><option>Cancha 1</option><option>Cancha 2</option></select>
+<input id="fecha" type="date">
+<select id="hora_inicio"></select><span>hasta</span><select id="hora_fin"></select>
+<input id="total" readonly style="width:100px;background:#e8f5e9;font-weight:bold" placeholder="Total">
+<input id="adelanto" type="number" placeholder="Adelanto">
+<input id="deuda" readonly style="width:100px;background:#ffebee;font-weight:bold" placeholder="Deuda">
+<input id="boleta_adelanto" placeholder="Boleta Adelanto" style="width:130px">
+<select id="estado"><option value="ADELANTO">ADELANTO</option><option value="PAGADO">CANCELADO</option></select>
+<button class="btn-verde" onclick="crear()">Guardar en {{sede}}</button>
+</div>
+<p id="infoTarifa" style="font-size:12px;font-weight:bold;color:#2e7d32"></p>
+</div>
+
+<!-- ✅ FILTRO NUEVO -->
+<div class="filtro-box">
+  <span style="font-weight:bold">🔍</span>
+  <input id="filtroBusqueda" placeholder="Buscar: nombre, celular, cancha, boleta, usuario, fecha..." oninput="aplicarFiltro()">
+  <select id="filtroEstado" onchange="aplicarFiltro()">
+    <option value="">Todos los estados</option>
+    <option value="ADELANTO">ADELANTO</option>
+    <option value="PAGADO">CANCELADO</option>
+    <option value="NO_VINO">NO VINO</option>
+  </select>
+  <select id="filtroCancha" onchange="aplicarFiltro()">
+    <option value="">Todas las canchas</option>
+    <option value="Cancha 1">Cancha 1</option>
+    <option value="Cancha 2">Cancha 2</option>
+  </select>
+  <input id="filtroFecha" type="date" onchange="aplicarFiltro()" style="min-width:140px">
+  <button class="btn-gris" style="width:auto;padding:8px 12px" onclick="limpiarFiltro()">✕ Limpiar</button>
+  <span class="badge-count" id="contador">0 reservas</span>
+</div>
+
+<div class="card" style="padding:0"><table><thead><tr><th>Cliente</th><th>Cancha / Horario</th><th>Duración</th><th>Total / Debe</th><th>Boleta Adel.</th><th>Boleta Final</th><th>Estado</th><th>Usuario / Hora</th><th>Historial</th><th>Acciones</th></tr></thead><tbody id="tabla"></tbody></table></div>
+
+<div id="modalHist" style="display:none;position:fixed;inset:0;background:#000a;z-index:99;align-items:center;justify-content:center"><div style="background:white;padding:20px;border-radius:12px;max-width:650px;width:92%;max-height:85vh;overflow:auto"><h3 id="histTitulo">📜 Historial</h3><div id="histBody"></div><button onclick="document.getElementById('modalHist').style.display='none'" style="margin-top:12px;background:#111;color:white;padding:10px 16px;border-radius:8px;width:100%">Cerrar</button></div></div>
+
+<div id="modalReprog" style="display:none;position:fixed;inset:0;background:#000a;z-index:99;align-items:center;justify-content:center">
+<div style="background:white;padding:20px;border-radius:12px;max-width:500px;width:92%">
+<h3 style="margin-top:0">📅 Reprogramar Reserva</h3>
+<p id="reprogInfo" style="font-size:13px;background:#e3f2fd;padding:8px;border-radius:8px"></p>
+<input type="hidden" id="reprog_id">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<label>Cancha<select id="reprog_cancha"><option>Cancha 1</option><option>Cancha 2</option></select></label>
+<label>Fecha<input id="reprog_fecha" type="date"></label>
+<label>Hora inicio<select id="reprog_hora_inicio"></select></label>
+<label>Hora fin<select id="reprog_hora_fin"></select></label>
+</div>
+<p id="reprogTotal" style="font-weight:bold;color:#2e7d32"></p>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="btn-azul" style="flex:1" onclick="guardarReprog()">💾 Guardar Reprogramación</button>
+<button class="btn-gris" style="flex:1" onclick="document.getElementById('modalReprog').style.display='none'">Cancelar</button>
+</div>
+</div>
+</div>
+
+<script>
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+const SEDE = document.body.getAttribute('data-sede') || '{{sede}}';
+const $=id=>document.getElementById(id);
+let TODAS_RESERVAS = []; // guardamos todo para filtrar sin pedir API
+
+function llenarHoras(){
+  let opts='';for(let h=6;h<=23;h++){for(let m of [0,30]){let t=`${String(h).padStart(2,'0')}:${m==0?'00':'30'}`;opts+=`<option value="${t}">${t}</option>`;}}for(let h=0;h<=2;h++){for(let m of [0,30]){let t=`${String(h).padStart(2,'0')}:${m==0?'00':'30'}`;opts+=`<option value="${t}">${t}</option>`;}}
+  $('hora_inicio').innerHTML=opts;$('hora_fin').innerHTML=opts;
+  $('reprog_hora_inicio').innerHTML=opts;$('reprog_hora_fin').innerHTML=opts;
+  $('hora_inicio').value='18:00';$('hora_fin').value='19:30';
+}
+function horaAMin(h){let [hh,mm]=h.split(':').map(Number);return hh*60+mm;}
+function calc(){
+  let hi=$('hora_inicio').value;let hf=$('hora_fin').value;if(!hi||!hf)return;
+  let ini=horaAMin(hi);let fin=horaAMin(hf);if(fin<=ini)fin+=1440;
+  let dur=(fin-ini)/60;
+  let total=0;let m=ini;while(m<fin){let h=Math.floor((m%1440)/60);let ph=(h>=18||h<=2)?80:60;total+=ph*0.5;m+=30;}
+  total=Math.round(total);$('total').value=total;
+  $('infoTarifa').innerText=`${dur}h (${dur*2} bloques) = S/${total} - Día S/60/h - Noche S/80/h | Sede: ${SEDE}`;
+  let adel=parseInt($('adelanto').value||0);$('deuda').value=(total-adel)>0?`Debe S/${total-adel}`:'CANCELADO';
+}
+function calcReprog(){
+  let hi=$('reprog_hora_inicio').value;let hf=$('reprog_hora_fin').value;if(!hi||!hf)return;
+  let ini=horaAMin(hi);let fin=horaAMin(hf);if(fin<=ini)fin+=1440;
+  let dur=(fin-ini)/60;let total=0;let m=ini;while(m<fin){let h=Math.floor((m%1440)/60);let ph=(h>=18||h<=2)?80:60;total+=ph*0.5;m+=30;}
+  total=Math.round(total);$('reprogTotal').innerText=`Nuevo total: S/${total} (${dur}h)`;
+}
+$('hora_inicio').addEventListener('change',calc);$('hora_fin').addEventListener('change',calc);$('adelanto').addEventListener('input',calc);
+$('reprog_hora_inicio').addEventListener('change',calcReprog);$('reprog_hora_fin').addEventListener('change',calcReprog);
+llenarHoras();calc();
+
+function apiUrl(path){
+  let sep = path.includes('?') ? '&' : '?';
+  return path + sep + 'sede=' + SEDE;
+}
+
+// ✅ NUEVA LÓGICA DE FILTRO
+function aplicarFiltro(){
+  let texto = $('filtroBusqueda').value.toLowerCase().trim();
+  let estado = $('filtroEstado').value;
+  let cancha = $('filtroCancha').value;
+  let fecha = $('filtroFecha').value;
+
+  let filtradas = TODAS_RESERVAS.filter(x=>{
+    let blob = `${x.nombre} ${x.telefono} ${x.cancha} ${x.fecha} ${x.hora_inicio} ${x.hora_fin} ${x.boleta_adelanto||''} ${x.boleta_final||''} ${x.creado_por||''} ${x.actualizado_por||''}`.toLowerCase();
+    if(texto && !blob.includes(texto)) return false;
+    if(estado && x.estado !== estado) return false;
+    if(cancha && x.cancha !== cancha) return false;
+    if(fecha && x.fecha !== fecha) return false;
+    return true;
+  });
+  renderTabla(filtradas);
+}
+
+function limpiarFiltro(){
+  $('filtroBusqueda').value='';
+  $('filtroEstado').value='';
+  $('filtroCancha').value='';
+  $('filtroFecha').value='';
+  aplicarFiltro();
+}
+
+function renderTabla(datos){
+  $('contador').innerText = `${datos.length} / ${TODAS_RESERVAS.length} reservas`;
+  let tb=$('tabla');tb.innerHTML='';
+  if(!datos.length){ tb.innerHTML='<tr><td colspan="10" style="padding:20px;color:#999">🔍 No se encontró ninguna reserva con ese filtro</td></tr>'; return; }
+  datos.forEach(x=>{
+    let hi=x.hora_inicio||x.hora||'-';let hf=x.hora_fin||'-';let dur=x.duracion||1;
+    let deuda=x.monto_total-x.adelanto;let esNoVino=x.estado=='NO_VINO';
+    let fechaBonita = (x.actualizado_en || x.creado || '').replace('T',' ').slice(0,19);
+    let usuarioInfo = `<small>👤 <b>${x.creado_por||'-'}</b><br>${fechaBonita}<br><span style="color:#1565c0">${x.actualizado_por && x.actualizado_por!=x.creado_por ? 'Mod: '+x.actualizado_por : ''}</span></small>`;
+    tb.innerHTML+=`<tr class="${esNoVino?'fila-no-vino':''}">
+      <td><b>${x.nombre}</b><br><small>${x.telefono}</small></td>
+      <td>${x.cancha}<br><b>${hi} - ${hf}</b><br><small>${x.fecha}</small></td>
+      <td><b>${dur}h</b></td>
+      <td>S/${x.monto_total}<br><b style="color:${deuda>0&&!esNoVino?'#c62828':'#2e7d32'}">${deuda>0&&!esNoVino?'Debe S/'+deuda:'Pagado S/'+x.adelanto}</b></td>
+      <td>${x.boleta_adelanto?`<span class="boleta">${x.boleta_adelanto}</span>`:''} <button class="btn-naranja" style="padding:4px 8px" onclick="editarBoleta(${x.id},'adelanto')">✏</button></td>
+      <td>${x.boleta_final?`<span class="boleta" style="background:#c8e6c9">${x.boleta_final}</span>`:''} <button class="btn-naranja" style="padding:4px 8px" onclick="editarBoleta(${x.id},'final')">✏</button></td>
+      <td><span class="${x.estado}">${x.estado=='PAGADO'?'CANCELADO':x.estado}</span></td>
+      <td>${usuarioInfo}</td>
+      <td><button class="btn-naranja" style="padding:6px 10px" onclick="verHistorial(${x.id},'${x.nombre.replace(/'/g,'')}')">📜</button></td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn-azul" style="padding:5px 8px;font-size:11px" onclick="abrirReprog(${x.id})">📅 Reprog.</button>
+        ${!esNoVino&&x.estado!='PAGADO'?`<button class="btn-verde" style="padding:5px 8px;font-size:11px" onclick="ponerCancelado(${x.id})">✓ CANCELADO</button>`:''}
+        ${!esNoVino?`<button class="btn-gris" style="padding:5px 8px;font-size:11px" onclick="ponerNoVino(${x.id})">✕ NO VINO</button>`: `<button class="btn-verde" style="padding:5px 8px;font-size:11px" onclick="reactivar(${x.id})">↩ REACTIVAR</button>`}
+        </div>
+      </td>
+    </tr>`;
+  });
+}
+
+async function cargar(){
+  let r=await fetch(apiUrl('/api/reservas')); 
+  let datos=await r.json(); 
+  if(!Array.isArray(datos)){ console.log('Error API', datos); return; }
+  TODAS_RESERVAS = datos;
+  $('ultHora').innerText=new Date().toLocaleTimeString();
+  aplicarFiltro(); // usa el filtro actual
+}
+
+async function crear(){
+  let data={
+    nombre:$('nombre').value,
+    telefono:$('telefono').value,
+    cancha:$('cancha').value,
+    fecha:$('fecha').value,
+    hora_inicio:$('hora_inicio').value,
+    hora_fin:$('hora_fin').value,
+    monto_total:$('total').value,
+    adelanto:$('adelanto').value||0,
+    estado:$('estado').value,
+    boleta_adelanto:$('boleta_adelanto').value, 
+    sede: SEDE
+  };
+  if(!data.nombre||!data.fecha){alert('Falta nombre o fecha');return}
+  let res=await fetch(apiUrl('/reservas'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  let j=await res.json();
+  if(!res.ok){alert(j.error||'Error');return}
+  $('nombre').value='';$('telefono').value='';$('adelanto').value='';$('boleta_adelanto').value='';cargar();
+}
+
+async function ponerCancelado(id){
+  let r=TODAS_RESERVAS.find(x=>x.id==id);
+  let boletaFinal=prompt('Boleta de CANCELACIÓN FINAL:', r.boleta_final||'');
+  if(boletaFinal===null)return;
+  await fetch(apiUrl(`/api/reservas/${id}`),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({adelanto:r.monto_total,estado:'PAGADO',boleta_final:boletaFinal, sede: SEDE})});cargar();
+}
+async function ponerNoVino(id){if(!confirm('¿Marcar como NO VINO?'))return;await fetch(apiUrl(`/api/reservas/${id}`),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({estado:'NO_VINO', sede: SEDE})});cargar();}
+async function reactivar(id){
+  let r=TODAS_RESERVAS.find(x=>x.id==id);
+  let nuevoEstado=(r.adelanto>=r.monto_total)?'PAGADO':'ADELANTO';
+  await fetch(apiUrl(`/api/reservas/${id}`),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({estado:nuevoEstado, sede: SEDE})});cargar();
+}
+async function editarBoleta(id,tipo){
+  let r=TODAS_RESERVAS.find(x=>x.id==id);
+  let actual=tipo=='adelanto'?r.boleta_adelanto:r.boleta_final;
+  let b=prompt(`Boleta ${tipo.toUpperCase()}:`,actual||'');if(b===null)return;
+  let payload=tipo=='adelanto'?{boleta_adelanto:b, sede: SEDE}:{boleta_final:b, sede: SEDE};
+  await fetch(apiUrl(`/api/reservas/${id}`),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});cargar();
+}
+async function verHistorial(id,nombre){
+  $('histTitulo').innerText='📜 Historial #'+id+' - '+nombre;
+  $('histBody').innerHTML='Cargando...';
+  $('modalHist').style.display='flex';
+  let r=await fetch(apiUrl('/api/historial/'+id)); let h=await r.json();
+  if(!h.length){$('histBody').innerHTML='<p>Sin movimientos, solo creación.</p>';return}
+  $('histBody').innerHTML=h.map(x=>`<div style="border-left:4px solid #111;padding:8px;margin:6px 0;background:#f8fafc;border-radius:6px"><b>${x.accion}</b> por <b>${x.usuario} (${x.rol})</b><br><small>${x.fecha_hora}</small><br><small style="background:#fff;padding:2px 6px;border-radius:4px">${x.detalle||''}</small></div>`).join('');
+}
+async function abrirReprog(id){
+  let r=TODAS_RESERVAS.find(x=>x.id==id);
+  if(!r) return;
+  $('reprog_id').value=id;
+  $('reprog_cancha').value=r.cancha;
+  $('reprog_fecha').value=r.fecha;
+  $('reprog_hora_inicio').value=r.hora_inicio||r.hora;
+  $('reprog_hora_fin').value=r.hora_fin||'19:30';
+  $('reprogInfo').innerHTML=`Cliente: <b>${r.nombre}</b> | Adelanto: <b>S/${r.adelanto}</b> de S/${r.monto_total}<br>Actual: ${r.cancha} ${r.fecha} ${r.hora_inicio}-${r.hora_fin}`;
+  calcReprog();
+  $('modalReprog').style.display='flex';
+}
+async function guardarReprog(){
+  let id=$('reprog_id').value;
+  let data={
+    cancha:$('reprog_cancha').value,
+    fecha:$('reprog_fecha').value,
+    hora_inicio:$('reprog_hora_inicio').value,
+    hora_fin:$('reprog_hora_fin').value,
+    sede: SEDE
+  };
+  if(!data.fecha||!data.hora_inicio||!data.hora_fin){alert('Falta fecha/hora');return}
+  let res=await fetch(apiUrl('/api/reservas/'+id),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  let j=await res.json();
+  if(!res.ok){alert(j.error);return}
+  $('modalReprog').style.display='none';
+  cargar();
+}
+cargar();setInterval(cargar,3000);$('fecha').value=new Date().toISOString().split('T')[0];
+</script></body></html>

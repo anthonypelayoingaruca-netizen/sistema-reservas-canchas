@@ -1,0 +1,101 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Horarios {{sede}}</title>
+<style>
+*{box-sizing:border-box} body{font-family:Arial, sans-serif;margin:0;background:#f8fafc;color:#111}
+.topbar{background:#111;color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.topbar a{color:white;text-decoration:none}
+.header{background:#111;color:white;padding:20px;text-align:center}
+.container{max-width:800px;margin:auto;padding:16px}
+.card{background:white;border-radius:16px;box-shadow:0 8px 24px #0001;padding:16px;margin-bottom:16px}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-day-name{text-align:center;font-size:11px;font-weight:bold;color:#64748b;padding:4px}
+.cal-day{aspect-ratio:1;background:#f1f5f9;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;font-size:14px;transition:0.2s}
+.cal-day:hover{border-color:#111;transform:scale(1.05)} .cal-day.hoy{border-color:#2e7d32;background:#e8f5e9;font-weight:bold}
+.cal-day .num{font-size:18px} .cal-day .libres{font-size:9px;margin-top:3px;background:#2e7d32;color:white;padding:2px 6px;border-radius:10px}
+.live{background:#2e7d32;color:white;padding:3px 8px;border-radius:20px;font-size:10px}
+.badge-sede{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;color:white}
+.badge-COMAS{background:#2563eb}.badge-JICAMARCA{background:#d97706}.badge-TODAS{background:#111}
+/* SELECTOR DUEÑO */
+.sede-switch{background:#e2e8f0;padding:5px;border-radius:14px;display:flex;gap:5px;width:fit-content;margin:0 auto 16px auto}
+.sede-btn{padding:10px 22px;border-radius:10px;border:none;font-weight:bold;cursor:pointer;font-size:14px;transition:0.2s;background:transparent;color:#64748b}
+.sede-btn.active{background:#111;color:white;box-shadow:0 4px 12px #0002}
+.sede-btn.active-comas{background:#2563eb;color:white}
+.sede-btn.active-jica{background:#d97706;color:white}
+/* MENU */
+.menu-btn-small{background:white;border:1px solid #ddd;color:#111;padding:6px 12px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px #0002;width:auto;font-size:18px;margin-right:10px}
+#sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#0f172a;color:white;z-index:200;transition:0.3s;padding:20px;box-shadow:4px 0 20px #0005;display:flex;flex-direction:column}
+#sidebar.open{left:0}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;display:none;z-index:199}
+#overlay.show{display:block}
+.side-header{font-size:20px;font-weight:bold;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.side-link{display:flex;align-items:center;gap:14px;padding:16px 14px;border-radius:12px;color:white;text-decoration:none;font-size:16px;margin:6px 0}
+.side-link:hover{background:#1e293b}
+.side-link.active{background:#2e7d32}
+.side-icon{font-size:20px;width:28px;text-align:center}
+.side-footer{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22}
+.badge-role{background:#334155;padding:4px 10px;border-radius:20px;font-size:11px}
+</style></head><body data-sede="{{sede}}">
+
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sidebar">
+  <div class="side-header"><span>⚽ Canchas App</span><button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:22px;width:auto;padding:0;cursor:pointer">✕</button></div>
+  <div style="margin-bottom:12px"><span class="badge-role">👤 {{session.username}} - {{session.rol}}</span> <span class="badge-sede badge-{{sede}}">{{sede}}</span></div>
+  <a class="side-link" href="/reservas?sede={{sede}}"><span class="side-icon">📅</span> Panel</a>
+  <a class="side-link active" href="/horarios?sede={{sede}}"><span class="side-icon">🕐</span> Horarios</a>
+  {% if session.rol == 'DUENO' %}
+  <a class="side-link" href="/resumen?sede={{sede}}"><span class="side-icon">📊</span> Resumen</a>
+  <a class="side-link" href="/admin-dueno"><span class="side-icon">🔑</span> Admin Dueño</a>
+  <a class="side-link" href="/register"><span class="side-icon">👥</span> Usuarios</a>
+  {% endif %}
+  <div class="side-footer"><a class="side-link" href="/logout" style="background:#c6282888"><span class="side-icon">🚪</span> Salir</a></div>
+</div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <button class="menu-btn-small" onclick="toggleMenu()">☰</button>
+    <span>👤 {{session.username}} - {{session.rol}} <span class="badge-sede badge-{{sede}}">{{sede}}</span> <span class="live">● AUTO 3s</span> <b id="ultima">--:--</b></span>
+  </div>
+  <a href="/logout" style="background:#c62828;padding:6px 12px;border-radius:8px;font-weight:bold">Salir</a>
+</div>
+
+<div class="header">
+  <h1 style="margin:0">⚽ Horarios - <span class="badge-sede badge-{{sede}}">{{sede}}</span></h1>
+  <p style="opacity:0.8">Toca una fecha para ver Cancha 1 / Cancha 2</p>
+</div>
+
+<div class="container">
+
+  {% if session.rol == 'DUENO' %}
+  <div class="sede-switch">
+    <button class="sede-btn {% if sede=='COMAS' %}active active-comas{% endif %}" onclick="location.href='/horarios?sede=COMAS'">📍 COMAS</button>
+    <button class="sede-btn {% if sede=='JICAMARCA' %}active active-jica{% endif %}" onclick="location.href='/horarios?sede=JICAMARCA'">📍 JICAMARCA</button>
+  </div>
+  <div style="text-align:center;color:#64748b;font-size:12px;margin-bottom:12px">🔑 Vista de Dueño - Puedes cambiar de sede</div>
+  {% endif %}
+
+  <div class="card">
+    <div class="cal-head"><button onclick="cambiarMes(-1)">◀</button><h3 id="mesTitulo" style="margin:0"></h3><button onclick="cambiarMes(1)">▶</button></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div style="text-align:center;font-size:12px;color:#64748b;margin-top:12px;background:#f1f5f9;padding:10px;border-radius:10px">DB: reservas_{{sede|lower}}.db | Toca cualquier día</div>
+  </div>
+</div>
+
+<script>
+function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+const SEDE = document.body.dataset.sede || '{{sede}}';
+let reservas=[]; let mesVista=new Date(); mesVista.setDate(1);
+const fmt=d=>d.toISOString().split('T')[0];
+function apiUrl(path){return path + (path.includes('?')?'&':'?') + 'sede=' + SEDE;}
+async function cargar(){let r=await fetch(apiUrl('/api/reservas'));reservas=await r.json();if(!Array.isArray(reservas))return;document.getElementById('ultima').innerText=new Date().toLocaleTimeString();renderCalendario();}
+function renderCalendario(){
+  let y=mesVista.getFullYear(),m=mesVista.getMonth();
+  document.getElementById('mesTitulo').innerText=mesVista.toLocaleDateString('es-PE',{month:'long',year:'numeric'}) + ' - ' + SEDE;
+  let grid=document.getElementById('calGrid');grid.innerHTML='';
+  ['LUN','MAR','MIE','JUE','VIE','SAB','DOM'].forEach(d=>{let e=document.createElement('div');e.className='cal-day-name';e.innerText=d;grid.appendChild(e);});
+  let primer=new Date(y,m,1); let start=(primer.getDay()+6)%7; let dias=new Date(y,m+1,0).getDate();
+  for(let i=0;i<start;i++){let e=document.createElement('div');e.className='cal-day';e.style.opacity='0.2';grid.appendChild(e);}
+  for(let d=1;d<=dias;d++){let fecha=new Date(y,m,d); let fStr=fmt(fecha); let ocup=reservas.filter(r=>r.fecha===fStr&&r.estado!=='NO_VINO').length; let div=document.createElement('div'); div.className='cal-day'; if(fStr===fmt(new Date()))div.classList.add('hoy'); div.innerHTML=`<span class="num">${d}</span>${ocup?`<span class="libres">${ocup} ocup</span>`:''}`; div.onclick=()=>location.href=`/horarios-dia?fecha=${fStr}&sede=${SEDE}`; grid.appendChild(div);}
+}
+function cambiarMes(dir){mesVista.setMonth(mesVista.getMonth()+dir);renderCalendario();}
+cargar();setInterval(cargar,3000);
+</script></body></html>

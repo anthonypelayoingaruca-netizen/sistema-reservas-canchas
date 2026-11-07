@@ -1,0 +1,122 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Horarios {{sede}} {{fecha}}</title>
+<style>
+body{font-family:Arial;margin:0;background:#f8fafc}
+.topbar{background:#111;color:white;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.topbar a{color:white;text-decoration:none}
+.header{background:#111;color:white;padding:18px;text-align:center}
+.card{background:white;border-radius:16px;box-shadow:0 8px 24px #0001;padding:16px;margin:16px auto;max-width:800px}
+.slots{display:grid;grid-template-columns:80px 1fr 1fr;gap:1px;background:#e2e8f0;border-radius:12px;overflow:hidden}
+.slot-head{background:#111;color:white;padding:12px;text-align:center;font-weight:bold;font-size:13px}
+.slot-hora{background:white;padding:10px;text-align:center;font-weight:bold;font-size:13px}
+.slot-cancha{padding:10px;min-height:50px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;text-align:center}
+.libre{background:#e8f5e9;color:#1b5e20} .ocupado{background:#ffebee;color:#b71c1c}
+.live{background:#2e7d32;color:white;padding:3px 8px;border-radius:20px;font-size:10px}
+.badge-sede{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;color:white}
+.badge-COMAS{background:#2563eb}.badge-JICAMARCA{background:#d97706}.badge-TODAS{background:#111}
+/* MENU */
+.menu-btn-small{background:white;border:1px solid #ddd;color:#111;padding:6px 12px;border-radius:10px;cursor:pointer;box-shadow:0 2px 8px #0002;width:auto;font-size:18px;margin-right:10px}
+#sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#0f172a;color:white;z-index:200;transition:0.3s;padding:20px;box-shadow:4px 0 20px #0005;display:flex;flex-direction:column}
+#sidebar.open{left:0}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;display:none;z-index:199}
+#overlay.show{display:block}
+.side-header{font-size:20px;font-weight:bold;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.side-link{display:flex;align-items:center;gap:14px;padding:16px 14px;border-radius:12px;color:white;text-decoration:none;font-size:16px;margin:6px 0}
+.side-link:hover{background:#1e293b}
+.side-link.active{background:#2e7d32}
+.side-icon{font-size:20px;width:28px;text-align:center}
+.side-footer{margin-top:auto;padding-top:20px;border-top:1px solid #ffffff22}
+.badge-role{background:#334155;padding:4px 10px;border-radius:20px;font-size:11px}
+</style></head><body data-sede="{{sede}}">
+
+<div id="overlay" onclick="toggleMenu()"></div>
+<div id="sidebar">
+  <div class="side-header">
+    <span>⚽ Canchas App</span>
+    <button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:22px;width:auto;padding:0;cursor:pointer">✕</button>
+  </div>
+  <div style="margin-bottom:12px"><span class="badge-role">👤 {{session.username}} - {{session.rol}}</span> <span class="badge-sede badge-{{sede}}">{{sede}}</span></div>
+  <a class="side-link" href="/reservas?sede={{sede}}"><span class="side-icon">📅</span> Panel Reservas</a>
+  <a class="side-link" href="/{{sede|lower}}"><span class="side-icon">📍</span> {{sede}}</a>
+  <a class="side-link active" href="/horarios?sede={{sede}}"><span class="side-icon">🕐</span> Horarios</a>
+  {% if session.rol == 'DUENO' %}
+  <a class="side-link" href="/resumen?sede={{sede}}"><span class="side-icon">📊</span> Resumen</a>
+  <a class="side-link" href="/admin-dueno"><span class="side-icon">🔑</span> Admin Dueño</a>
+  <a class="side-link" href="/register"><span class="side-icon">👥</span> Crear Usuarios</a>
+  {% endif %}
+  <div class="side-footer">
+    <a class="side-link" href="/logout" style="background:#c6282888"><span class="side-icon">🚪</span> Cerrar Sesión</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <button class="menu-btn-small" onclick="toggleMenu()">☰</button>
+    <span>👤 {{session.username}} - {{session.rol}} <span class="badge-sede badge-{{sede}}">{{sede}}</span> <span class="live">● AUTO 3s</span> <b id="hora">--:--</b></span>
+  </div>
+  <div>
+    <a href="/logout" style="background:#c62828;padding:6px 12px;border-radius:8px;font-weight:bold">Salir</a>
+  </div>
+</div>
+
+<div class="header"><h1 id="titulo">Horarios - <span class="badge-sede badge-{{sede}}">{{sede}}</span></h1><p id="subtitulo"></p></div>
+{% if session.rol == 'DUENO' %}
+<div style="text-align:center;padding:12px;background:white">
+  <div class="sede-switch" style="margin:0 auto">
+    <button class="sede-btn {% if sede=='COMAS' %}active active-comas{% endif %}" onclick="location.href='/horarios-dia?fecha='+getFecha()+'&sede=COMAS'">📍 COMAS</button>
+    <button class="sede-btn {% if sede=='JICAMARCA' %}active active-jica{% endif %}" onclick="location.href='/horarios-dia?fecha='+getFecha()+'&sede=JICAMARCA'">📍 JICAMARCA</button>
+  </div>
+</div>
+{% endif %}
+<div class="card">
+  <div id="slotsWrap">Cargando horarios de {{sede}}...</div>
+  
+  <div style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <button onclick="location.href='/horarios?sede='+SEDE" style="background:#111;color:white;padding:12px 22px;border-radius:10px;border:none;font-weight:bold;cursor:pointer;width:auto">← Volver a Horarios {{sede}}</button>
+    <button onclick="location.href='/{{sede|lower}}'" style="background:#2563eb;color:white;padding:12px 22px;border-radius:10px;border:none;font-weight:bold;cursor:pointer;width:auto">📅 Panel {{sede}}</button>
+  </div>
+</div>
+
+<script>
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+const SEDE = document.body.dataset.sede || '{{sede}}' || new URLSearchParams(window.location.search).get('sede') || 'COMAS';
+function getFecha(){return new URLSearchParams(window.location.search).get('fecha')||new Date().toISOString().split('T')[0];}
+function horaAMin(h){let [hh,mm]=h.split(':').map(Number);return hh*60+mm;}
+function bloques(){let b=[];for(let h=6;h<=23;h++)for(let m of[0,30])b.push(`${String(h).padStart(2,'0')}:${m==0?'00':'30'}`);for(let h=0;h<=2;h++)for(let m of[0,30])b.push(`${String(h).padStart(2,'0')}:${m==0?'00':'30'}`);return b;}
+const BLOQUES=bloques(); let reservas=[];
+
+function apiUrl(path){
+  let sep = path.includes('?') ? '&' : '?';
+  return path + sep + 'sede=' + SEDE;
+}
+
+async function cargar(){
+  let r=await fetch(apiUrl('/api/reservas')); 
+  reservas=await r.json(); 
+  if(!Array.isArray(reservas)){ console.log('Error', reservas); document.getElementById('slotsWrap').innerHTML='<p>Error cargando</p>'; return; }
+  document.getElementById('hora').innerText=new Date().toLocaleTimeString(); 
+  render();
+}
+function ocupado(cancha,fecha,bloque){
+  let min=horaAMin(bloque);
+  for(let rr of reservas){
+    if(rr.fecha!==fecha||rr.cancha!==cancha||rr.estado==='NO_VINO')continue;
+    let ini=horaAMin(rr.hora_inicio||rr.hora||'00:00'); let fin=rr.hora_fin?horaAMin(rr.hora_fin):ini+(rr.duracion||1)*60; if(fin<=ini)fin+=1440; let b=min; if(b<360&&ini>=360)b+=1440;
+    if(b>=ini&&b<fin)return rr;
+  }return null;
+}
+function render(){
+  let fecha=getFecha(); let bonita=new Date(fecha+'T12:00:00').toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('titulo').innerHTML=`Disponibilidad - ${bonita} <span class="badge-sede badge-${SEDE}">${SEDE}</span>`;
+  document.getElementById('subtitulo').innerText=`Sede: ${SEDE} - DB: reservas_${SEDE.toLowerCase()}.db`;
+  let html='<div class="slots"><div class="slot-head">HORA</div><div class="slot-head">CANCHA 1</div><div class="slot-head">CANCHA 2</div>';
+  for(let blo of BLOQUES){
+    let o1=ocupado('Cancha 1',fecha,blo); let o2=ocupado('Cancha 2',fecha,blo);
+    html+=`<div class="slot-hora">${blo}</div><div class="slot-cancha ${o1?'ocupado':'libre'}">${o1?`OCUPADO<br><small>${o1.nombre}</small><br><small>S/${o1.monto_total}</small>`:'LIBRE ✅'}</div><div class="slot-cancha ${o2?'ocupado':'libre'}">${o2?`OCUPADO<br><small>${o2.nombre}</small><br><small>S/${o2.monto_total}</small>`:'LIBRE ✅'}</div>`;
+  }
+  html+='</div>'; document.getElementById('slotsWrap').innerHTML=html;
+}
+cargar(); setInterval(cargar,3000);
+</script></body></html>
